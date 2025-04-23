@@ -7,7 +7,8 @@ import {
   ListItemText,
   Stack,Box
 } from '@mui/material';
-import MediaPlayer from '../components/MediaPlayer';
+import MediaPlayerController from '../components/MediaPlayer';
+
 
 const mockSongs = {
   '1': ['Lo-fi Track 1', 'Lo-fi Track 2', 'Lo-fi Track 3'],
@@ -26,7 +27,7 @@ export default function PlaylistDetail() {
       </Typography>  
    
     <Stack spacing={3} sx={{pt: 2}}>
-      <MediaPlayer {...{url:'https://www.w3schools.com/html/mov_bbb.mp4'}}/>
+      <MediaPlayerController />
       <List>
         {songs.map((song, idx) => (
           <ListItem key={idx}>
