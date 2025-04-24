@@ -10,6 +10,7 @@ import SwipeRouter from './components/Swiperouter';
 import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import HomeIcon from '@mui/icons-material/Home';
 import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import { PlaylistProvider } from './components/PlaylistContext'; 
 
 function NavigationBar() {
   const location = useLocation();
@@ -48,10 +49,12 @@ function AppLayout() {
 
 function App() {
   return (
+    <PlaylistProvider>
     <Router>
       <CssBaseline />
       <AppLayout />
     </Router>
+    </PlaylistProvider>
   );
 }
 
