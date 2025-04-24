@@ -11,9 +11,7 @@ export const PlaylistProvider = ({ children }) => {
 
   useEffect(() => {
     const playlistMap = Object.fromEntries(playlists.map(p => [p.id, p]));
-    console.log('Playlist map:', playlistMap);
     localStorage.setItem('mediaPlaylists', JSON.stringify(playlistMap));
-    console.log('Playlists updated:', playlists);
   }, [playlists]);
 
   const createPlaylist = (name) => {
@@ -26,26 +24,41 @@ export const PlaylistProvider = ({ children }) => {
     return newPlaylist.id;
   };
 
-  const addTracksToPlaylist = (playlistId, files) => {
-    console.log('Adding tracks to playlist:', playlistId, files);
-    const newTracks = Array.from(files).map(file => ({
-      name: file.name,
-    }));
+  const addTracksToPlaylist = async (playlistId) => {
+    try {
+      const handles = await window.showOpenFilePicker({
+        multiple: true,
+        types: [
+          {
+            description: 'Media Files',
+            accept: {
+              'audio/*': ['.mp3', '.ogg', '.wav'],
+              'video/*': ['.mp4', '.webm']
+            }
+          }
+        ]
+      });
 
-    setPlaylists(prev => {
-      const updated = prev.map(p =>
-        p.id.toString() === playlistId ? { ...p, tracks: [...p.tracks, ...newTracks] } : p
+      const newTracks = await Promise.all(
+        handles.map(async handle => {
+          const file = await handle.getFile();
+          const url = URL.createObjectURL(file);
+          return { name: file.name, url };
+        })
       );
-      console.log('Updating playlists:', updated);
-      return updated;
-    });
+
+      setPlaylists(prev =>
+        prev.map(p =>
+          p.id === playlistId ? { ...p, tracks: [...p.tracks, ...newTracks] } : p
+        )
+      );
+    } catch (err) {
+      console.error('File selection cancelled or failed', err);
+    }
   };
 
   const getPlaylistById = (id) => {
-    console.log('Getting playlist by ID:', id);
-    const found = playlists.find(p => p.id.toString() === id);
-    console.log('Found playlist:', found);
-    return found;
+    return playlists.find(p => p.id === id);
   };
 
   return (

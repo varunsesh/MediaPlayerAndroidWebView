@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import ReactPlayer from 'react-player';
 import { Box, Button } from '@mui/material';
 import ShufflePlayer from './ShufflePlayer';
@@ -7,17 +7,25 @@ import { usePlaylist } from './PlaylistContext';
 
 const MediaPlayerController = () => {
   const playerRef = useRef(null);
+  const fileInputRef = useRef(null);
   const { id } = useParams();
   const { getPlaylistById, addTracksToPlaylist } = usePlaylist();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [sessionFileMap, setSessionFileMap] = useState({});
-  const fileInputRef = useRef(null);
+  const [playlistData, setPlaylistData] = useState(null);
 
-  const playlistData = getPlaylistById(id);
+  // Fetch the playlist again when it changes
+  useEffect(() => {
+    const updatedPlaylist = getPlaylistById(id);
+    setPlaylistData(updatedPlaylist);
+  }, [getPlaylistById, id]);
+
   const currentTrack = playlistData?.tracks?.[currentTrackIndex];
-  const currentUrl = currentTrack ? sessionFileMap[currentTrack.name]?.url : null;
+  const currentUrl = currentTrack?.url;
+
+  console.log('Playing URL:', currentUrl);
 
   const togglePlayPause = () => setIsPlaying(prev => !prev);
   const handleVolumeUp = () => setVolume(v => Math.min(1, v + 0.1));
@@ -35,42 +43,25 @@ const MediaPlayerController = () => {
     setIsPlaying(true);
   };
 
-  const handleFileChange = (e) => {
-    
-    const files = Array.from(e.target.files);
-    if (!id || files.length === 0) return;
-
-    // Store temporary URLs
-    const fileMapEntries = Object.fromEntries(
-      files.map(file => [file.name, { file, url: URL.createObjectURL(file) }])
-    );
-    setSessionFileMap(prev => ({ ...prev, ...fileMapEntries }));
-
-    // Update the playlist in context
-    addTracksToPlaylist(id, files);
+  const handleAddTracks = async () => {
+    await addTracksToPlaylist(id);
+    const refreshed = getPlaylistById(id);
+    setPlaylistData(refreshed);
   };
 
   return (
     <Box>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="audio/*,video/*"
-        multiple
-        style={{ display: 'none' }}
-        onChange={handleFileChange}
-      />
       <Button
         variant="outlined"
         fullWidth
         sx={{ mb: 2 }}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={handleAddTracks}
       >
         Add Media Files
       </Button>
 
       {playlistData?.tracks?.length > 0 && currentUrl && (
-        <>
+        <Box>
           <ReactPlayer
             ref={playerRef}
             url={currentUrl}
@@ -90,7 +81,7 @@ const MediaPlayerController = () => {
             onVolumeUp={handleVolumeUp}
             onVolumeDown={handleVolumeDown}
           />
-        </>
+        </Box>
       )}
     </Box>
   );
