@@ -1,4 +1,4 @@
-// src/pages/Playlist.jsx
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Typography,
@@ -9,6 +9,11 @@ import {
   Stack,
   Button,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
 import { usePlaylist } from '../components/PlaylistContext';
 
@@ -16,9 +21,24 @@ export default function Playlist() {
   const navigate = useNavigate();
   const { playlists, createPlaylist } = usePlaylist();
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+
   const handleCreate = () => {
-    const newId = createPlaylist('Unnamed');
-    navigate(`/playlists/${newId}`);
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setNewPlaylistName("");
+  };
+
+  const handleDialogConfirm = () => {
+    if (newPlaylistName.trim()) {
+      const newId = createPlaylist(newPlaylistName.trim());
+      navigate(`/playlists/${newId}`);
+    }
+    handleDialogClose();
   };
 
   return (
@@ -27,6 +47,7 @@ export default function Playlist() {
         <Typography variant="h6" fontWeight={600}>
           Your Playlists
         </Typography>
+
         <List disablePadding>
           {playlists.map((playlist) => (
             <ListItem key={playlist.id} disableGutters>
@@ -41,6 +62,27 @@ export default function Playlist() {
           + Create New Playlist
         </Button>
       </Box>
+
+      {/* Dialog for entering playlist name */}
+      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+        <DialogTitle>Create New Playlist</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Playlist Name"
+            fullWidth
+            value={newPlaylistName}
+            onChange={(e) => setNewPlaylistName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose}>Cancel</Button>
+          <Button onClick={handleDialogConfirm} variant="contained">
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
