@@ -6,9 +6,9 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <Stack spacing={3} alignItems="stretch" sx={{ml:10, pt: 4 }}>
+    <Stack spacing={3} alignItems="stretch" sx={{ml:8, pt: 4 }}>
       <Typography variant="h5" textAlign="center" fontWeight={600}>
-        🎵 Media Player
+        🎵 Vaib with Music
       </Typography>
       <Button variant="contained" size="large" onClick={() => navigate('/playlists')}>
         View Playlists
