@@ -9,6 +9,8 @@ export const PlaylistProvider = ({ children }) => {
     return stored ? Object.values(JSON.parse(stored)) : [];
   });
 
+  const [currentPlayingInfo, setCurrentPlayingInfo] = useState({ playlistId: null, trackIndex: null });
+
   useEffect(() => {
     const playlistMap = Object.fromEntries(playlists.map(p => [p.id, p]));
     localStorage.setItem('mediaPlaylists', JSON.stringify(playlistMap));
@@ -25,15 +27,11 @@ export const PlaylistProvider = ({ children }) => {
   };
 
   const addTracksToPlaylist = async (playlistId, newTracks) => {
-    try {
-      setPlaylists(prev =>
-        prev.map(p =>
-          p.id === playlistId ? { ...p, tracks: [...p.tracks, ...newTracks] } : p
-        )
-      );
-    } catch (err) {
-      console.error('File selection cancelled or failed', err);
-    }
+    setPlaylists(prev =>
+      prev.map(p =>
+        p.id === playlistId ? { ...p, tracks: [...p.tracks, ...newTracks] } : p
+      )
+    );
   };
 
   const getPlaylistById = (id) => {
@@ -42,7 +40,7 @@ export const PlaylistProvider = ({ children }) => {
 
   return (
     <PlaylistContext.Provider
-      value={{ playlists, createPlaylist, addTracksToPlaylist, getPlaylistById }}
+      value={{ playlists, createPlaylist, addTracksToPlaylist, getPlaylistById, currentPlayingInfo, setCurrentPlayingInfo }}
     >
       {children}
     </PlaylistContext.Provider>

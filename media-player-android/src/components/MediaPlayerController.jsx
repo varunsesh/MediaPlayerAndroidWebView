@@ -10,7 +10,7 @@ const MediaPlayerController = () => {
   const playerRef = useRef(null);
   const fileInputRef = useRef(null);
   const { id } = useParams();
-  const { getPlaylistById, addTracksToPlaylist } = usePlaylist();
+  const { getPlaylistById, addTracksToPlaylist, setCurrentPlayingInfo } = usePlaylist();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
@@ -37,6 +37,13 @@ const MediaPlayerController = () => {
     };
     loadTrackUrl();
   }, [playlistData, currentTrackIndex]);
+
+  useEffect(() => {
+    // Whenever the track index changes, update global playing info
+    if (id) {
+      setCurrentPlayingInfo({ playlistId: id, trackIndex: currentTrackIndex });
+    }
+  }, [id, currentTrackIndex, setCurrentPlayingInfo]);
 
   console.log('Current URL:', currentUrl);
   const togglePlayPause = () => setIsPlaying(prev => !prev);
