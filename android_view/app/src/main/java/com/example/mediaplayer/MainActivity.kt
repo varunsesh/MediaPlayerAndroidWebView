@@ -1,11 +1,16 @@
 package com.example.mediaplayer
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
+
+    private var fileChooserCallback: ValueCallback<Array<Uri>>? = null
+    private val FILE_CHOOSER_REQUEST_CODE = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -13,20 +18,58 @@ class MainActivity : AppCompatActivity() {
         val webView = WebView(this)
         setContentView(webView)
 
-        webView.settings.javaScriptEnabled = true
-        webView.settings.allowFileAccess = true
-        webView.settings.allowFileAccessFromFileURLs = true
-        webView.settings.allowUniversalAccessFromFileURLs = true
+        webView.settings.apply {
+            javaScriptEnabled = true
+            allowContentAccess = true
+            allowFileAccess = true
+            domStorageEnabled = true
+            allowFileAccessFromFileURLs = true
+            allowUniversalAccessFromFileURLs = true
+            mediaPlaybackRequiresUserGesture = false
+        }
+
+        WebView.setWebContentsDebuggingEnabled(true)
+
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                view: WebView,
+                filePathCallback: ValueCallback<Array<Uri>>,
+                fileChooserParams: FileChooserParams
+            ): Boolean {
+                fileChooserCallback?.onReceiveValue(null)
+                fileChooserCallback = filePathCallback
+
+                val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                }
+
+                startActivityForResult(Intent.createChooser(intent, "Select Media"), FILE_CHOOSER_REQUEST_CODE)
+                return true
+            }
+        }
+
         webView.webViewClient = WebViewClient()
+        webView.loadUrl("file:///android_asset/index.html")
+    }
 
-        val html = assets.open("index.html").bufferedReader().use { it.readText() }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
 
-        webView.loadDataWithBaseURL(
-            "file:///android_asset/",
-            html,
-            "text/html",
-            "utf-8",
-            null
-        )
+        if (requestCode == FILE_CHOOSER_REQUEST_CODE && fileChooserCallback != null) {
+            val results: Array<Uri>? = if (resultCode == Activity.RESULT_OK) {
+                intent?.let {
+                    if (it.clipData != null) {
+                        Array(it.clipData!!.itemCount) { i -> it.clipData!!.getItemAt(i).uri }
+                    } else {
+                        it.data?.let { uri -> arrayOf(uri) }
+                    }
+                }
+            } else null
+
+            fileChooserCallback?.onReceiveValue(results)
+            fileChooserCallback = null
+        }
     }
 }

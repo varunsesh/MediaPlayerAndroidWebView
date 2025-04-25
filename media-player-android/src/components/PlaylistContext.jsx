@@ -24,29 +24,8 @@ export const PlaylistProvider = ({ children }) => {
     return newPlaylist.id;
   };
 
-  const addTracksToPlaylist = async (playlistId) => {
+  const addTracksToPlaylist = async (playlistId, newTracks) => {
     try {
-      const handles = await window.showOpenFilePicker({
-        multiple: true,
-        types: [
-          {
-            description: 'Media Files',
-            accept: {
-              'audio/*': ['.mp3', '.ogg', '.wav'],
-              'video/*': ['.mp4', '.webm']
-            }
-          }
-        ]
-      });
-
-      const newTracks = await Promise.all(
-        handles.map(async handle => {
-          const file = await handle.getFile();
-          const url = URL.createObjectURL(file);
-          return { name: file.name, url };
-        })
-      );
-
       setPlaylists(prev =>
         prev.map(p =>
           p.id === playlistId ? { ...p, tracks: [...p.tracks, ...newTracks] } : p

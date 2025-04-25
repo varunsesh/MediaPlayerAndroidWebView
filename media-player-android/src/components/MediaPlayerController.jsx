@@ -1,3 +1,4 @@
+//MediaPlayerController.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import ReactPlayer from 'react-player';
 import { Box, Button } from '@mui/material';
@@ -7,7 +8,6 @@ import { usePlaylist } from './PlaylistContext';
 
 const MediaPlayerController = () => {
   const playerRef = useRef(null);
-  const fileInputRef = useRef(null);
   const { id } = useParams();
   const { getPlaylistById, addTracksToPlaylist } = usePlaylist();
 
@@ -16,6 +16,7 @@ const MediaPlayerController = () => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [playlistData, setPlaylistData] = useState(null);
 
+  const fileInputRef = useRef(null);
   // Fetch the playlist again when it changes
   useEffect(() => {
     const updatedPlaylist = getPlaylistById(id);
@@ -43,20 +44,30 @@ const MediaPlayerController = () => {
     setIsPlaying(true);
   };
 
-  const handleAddTracks = async () => {
-    await addTracksToPlaylist(id);
+
+  const handleFileChange = async (event) => {
+    const files = Array.from(event.target.files);
+    const newTracks = files.map((file) => ({
+      name: file.name,
+      url: URL.createObjectURL(file),
+    }));
+    addTracksToPlaylist(id, newTracks);
     const refreshed = getPlaylistById(id);
     setPlaylistData(refreshed);
+    event.target.value = null; // Reset the input value
   };
 
   return (
     <Box>
-      <Button
-        variant="outlined"
-        fullWidth
-        sx={{ mb: 2 }}
-        onClick={handleAddTracks}
-      >
+      <input
+        type="file"
+        accept="audio/*,video/*"
+        multiple
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+      <Button variant="outlined" fullWidth sx={{ mb: 2 }} onClick={() => fileInputRef.current?.click()}>
         Add Media Files
       </Button>
 
