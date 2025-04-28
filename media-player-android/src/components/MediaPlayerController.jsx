@@ -11,6 +11,7 @@ const MediaPlayerController = () => {
   const fileInputRef = useRef(null);
   const { id } = useParams();
   const { getPlaylistById, addTracksToPlaylist, setCurrentPlayingInfo } = usePlaylist();
+  
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
@@ -78,6 +79,7 @@ const MediaPlayerController = () => {
         setCurrentUrl(url); // set current URL to the new file
         await saveFile(file.name, file); // only save if not already saved
         newTracks.push({ name: file.name, url }); // push new track
+        console.log('New Track:', { name: file.name, url });
       }
     }
   
@@ -92,7 +94,7 @@ const MediaPlayerController = () => {
   
 
   return (
-    <Box>
+    <Box sx={{mt:2}}>
       <input
         type="file"
         accept="audio/*,video/*"
@@ -111,7 +113,7 @@ const MediaPlayerController = () => {
       </Button>
 
       {playlistData?.tracks?.length > 0 && currentUrl && (
-        <Box>
+        <Box sx={{mt:5}}>
           <ReactPlayer
             ref={playerRef}
             url={currentUrl}

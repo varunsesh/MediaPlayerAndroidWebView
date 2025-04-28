@@ -7,8 +7,9 @@ import {
   CardContent,
   Stack,
   Box,
-  IconButton,
+  IconButton, Grid
 } from '@mui/material';
+
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { usePlaylist } from '../components/PlaylistContext';
 import MediaPlayerController from '../components/MediaPlayerController';
@@ -26,55 +27,80 @@ export default function PlaylistDetail() {
   }, [currentPlayingInfo]);
 
   return (
-    <Box sx={{ pb: 24, ml: 2, mr: 2, pt: 2 }}>
-      <Typography variant="h5" fontWeight={700} mb={2}>
-        {playlistObj?.name || 'Unnamed Playlist'}
-      </Typography>
+    <Box sx={{alignItems:'center', display: 'flex', flexDirection: 'column', overflow:'hidden', height: '100vh', ml: 2, mr: 2 }}>
+      {/* Header and Controller */}
+      <Box sx={{  flexShrink: 0, pt: 2, mb:5 }}>
+        <Typography variant="h5" fontWeight={700} mb={2}>
+          {playlistObj?.name || 'Unnamed Playlist'}
+        </Typography>
 
-      <Stack spacing={3} alignItems="center">
-        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          <MediaPlayerController />
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt:5, mb: 2 }}>
+          <MediaPlayerController  />
         </Box>
+      </Box>
 
-        <List sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%' }}>
+      {/* Scrollable Songs */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: 'auto',
+          ml:3,
+          pb: 10, // extra padding for safe bottom
+          scrollbarWidth:'none', 
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+          
+        }}
+      >
+        <List sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding:0,  alignItems: 'center'}}>
           {playlist.map((track, idx) => {
             const isCurrentlyPlaying = id === currentPlayingInfo.playlistId && idx === currentPlayingInfo.trackIndex;
             return (
               <Card
-                key={idx}
-                variant="outlined"
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: 2,
-                  px: 2,
-                  py: 1,
-                  backgroundColor: isCurrentlyPlaying ? 'primary.light' : 'background.paper',
-                  transition: 'transform 0.2s, background-color 0.2s',
-                  '&:hover': {
-                    backgroundColor: isCurrentlyPlaying ? 'primary.main' : 'primary.light',
-                    transform: 'scale(1.02)',
-                  },
-                }}
-              >
-                <CardActionArea
-                  sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
-                  onClick={() => {/* you can hook to skip to track here */}}
-                >
-                  {/* <IconButton color="primary">
-                    <PlayArrowIcon />
-                  </IconButton> */}
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="body1" fontWeight={600}>
-                      {track.name}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </Card>
+           key={idx}
+           variant="outlined"
+           sx={{
+             display: 'flex',
+             width: '90%',
+             alignItems: 'center',
+             borderRadius: 2,
+             px: 1.5, // Reduced horizontal padding
+             py: 0.5, // Reduced vertical padding
+             backgroundColor: isCurrentlyPlaying ? 'primary.light' : 'background.paper',
+             transition: 'transform 0.2s, background-color 0.2s',
+             minHeight: 56, // ✨ Makes it tighter (you can tweak this)
+             '&:hover': {
+               backgroundColor: isCurrentlyPlaying ? 'primary.main' : 'primary.light',
+               transform: 'scale(1.02)',
+          },
+        }}
+      >
+  <CardActionArea
+    sx={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: 1, // less gap
+      p: 0, // remove default padding
+      width: '100%' 
+    }}
+    onClick={() => {/* Optional: Play this track */}}
+  >
+    <IconButton color="primary" size="small">
+      <PlayArrowIcon fontSize="small" />
+    </IconButton>
+    <CardContent sx={{ flexGrow: 1, py: 0.5, '&:last-child': { pb: 0.5 } }}>
+      <Typography variant="body2" fontWeight={600} noWrap>
+        {track.name}
+      </Typography>
+    </CardContent>
+  </CardActionArea>
+</Card>
+
             );
           })}
         </List>
-      </Stack>
+      </Box>
     </Box>
   );
 }
