@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import ReactPlayer from 'react-player';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Slider, Typography } from '@mui/material';
 import ShufflePlayer from './ShufflePlayer';
 import { useParams } from 'react-router-dom';
 import { usePlaylist } from './PlaylistContext';
@@ -26,8 +26,15 @@ const MediaPlayerController = ({isQueueActive}) => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [playlistData, setPlaylistData] = useState(null);
   const [currentUrl, setCurrentUrl] = useState(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [currentTrack, setCurrentTrack] = useState(null);
 
-  // const isQueueActive = queue.length > 0;
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   useEffect(() => {
     const updatedPlaylist = getPlaylistById(id);
@@ -74,6 +81,25 @@ const MediaPlayerController = ({isQueueActive}) => {
       setCurrentPlayingInfo({ playlistId: id, trackIndex: currentTrackIndex });
     }
   }, [id, currentTrackIndex, isQueueActive, setCurrentPlayingInfo]);
+
+
+    // Save paused position to localStorage
+    useEffect(() => {
+      if (!isPlaying && currentTrack) {
+        localStorage.setItem(`pausedPosition_${currentTrack.name}`, currentTime);
+      }
+    }, [isPlaying, currentTime, currentTrack]);
+
+      // Resume from last paused position
+  useEffect(() => {
+    if (currentTrack && playerRef.current) {
+      const saved = localStorage.getItem(`pausedPosition_${currentTrack.name}`);
+      if (saved) {
+        playerRef.current.seekTo(parseFloat(saved), 'seconds');
+        setCurrentTime(parseFloat(saved));
+      }
+    }
+  }, [currentTrack]);
 
   const togglePlayPause = () => setIsPlaying(prev => !prev);
   const handleVolumeUp = () => setVolume(v => Math.min(1, v + 0.1));
@@ -137,6 +163,12 @@ const MediaPlayerController = ({isQueueActive}) => {
     event.target.value = null; // Reset file input
   };
 
+  const handleSeek = (e, value) => {
+    const seekTo = (value / 100) * duration;
+    playerRef.current?.seekTo(seekTo, 'seconds');
+    setCurrentTime(seekTo);
+  };
+
   return (
     <Box sx={{ mt: 2 }}>
       <input
@@ -164,6 +196,8 @@ const MediaPlayerController = ({isQueueActive}) => {
             playing={isPlaying}
             volume={volume}
             controls={false}
+            onProgress={({ playedSeconds }) => setCurrentTime(playedSeconds)}
+            onDuration={(d) => setDuration(d)}
             width="100%"
             height="auto"
             style={{ display: 'none' }}
@@ -176,6 +210,17 @@ const MediaPlayerController = ({isQueueActive}) => {
             onVolumeUp={handleVolumeUp}
             onVolumeDown={handleVolumeDown}
           />
+            {/* Progress Bar + Time Display */}
+            <Box sx={{ mt: 2 }}>
+            <Slider
+              value={duration ? (currentTime / duration) * 100 : 0}
+              onChange={handleSeek}
+              disabled={!duration}
+            />
+            <Typography variant="body2" textAlign="center" sx={{ mt: 1 }}>
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </Typography>
+          </Box>
         </Box>
       )}
     </Box>
