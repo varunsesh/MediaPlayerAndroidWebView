@@ -17,7 +17,8 @@ const MediaPlayerController = ({isQueueActive}) => {
     queue,
     currentQueueTrack,
     playNextInQueue,
-    addTracksToQueue
+    addTracksToQueue,
+    playPrevInQueue
   } = usePlaylist();
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -93,6 +94,9 @@ const MediaPlayerController = ({isQueueActive}) => {
         prev === 0 ? playlistData.tracks.length - 1 : prev - 1
       );
       setIsPlaying(true);
+    }
+    else if(isQueueActive){
+      playPrevInQueue();
     }
     // No previous in queue mode
   };

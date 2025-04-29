@@ -63,6 +63,11 @@ const playNextInQueue = () => {
   setCurrentPlayingInfo({ playlistId: 'queue', trackIndex: (currentQueueTrackIndex + 1) % queue.length });
 };
 
+const playPrevInQueue = ()=>{
+  setCurrentQueueTrackIndex(prev => (prev - 1 >= 0 ? prev - 1 : queue.length - 1));
+  setCurrentPlayingInfo({ playlistId: 'queue', trackIndex: (currentQueueTrackIndex - 1 + queue.length) % queue.length });
+}
+
   // Clear queue
   const clearQueue = () => {
     setQueue([]);
@@ -94,6 +99,8 @@ const playNextInQueue = () => {
         queue,
         addTracksToQueue,
         playNextInQueue,
+        playPrevInQueue,
+        removeTrackFromPlaylist,
         clearQueue,
         currentQueueTrack,
         currentQueueTrackIndex,
