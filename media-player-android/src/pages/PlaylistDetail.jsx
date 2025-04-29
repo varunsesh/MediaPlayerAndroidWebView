@@ -44,7 +44,7 @@ export default function PlaylistDetail() {
         sx={{
           flexGrow: 1,
           overflowY: 'auto',
-          ml:3,
+          ml:1.5,
           pb: 10, // extra padding for safe bottom
           scrollbarWidth:'none', 
           '&::-webkit-scrollbar': {
@@ -62,6 +62,7 @@ export default function PlaylistDetail() {
            variant="outlined"
            sx={{
              display: 'flex',
+             
              width: '90%',
              alignItems: 'center',
              borderRadius: 2,
@@ -86,11 +87,9 @@ export default function PlaylistDetail() {
     }}
     onClick={() => {/* Optional: Play this track */}}
   >
-    <IconButton color="primary" size="small">
       <PlayArrowIcon fontSize="small" />
-    </IconButton>
     <CardContent sx={{ flexGrow: 1, py: 0.5, '&:last-child': { pb: 0.5 } }}>
-      <Typography variant="body2" fontWeight={600} noWrap>
+      <Typography sx={{wordWrap:'break-word'}} variant="body2" fontWeight={600}>
         {track.name}
       </Typography>
     </CardContent>

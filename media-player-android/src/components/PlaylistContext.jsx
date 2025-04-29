@@ -5,24 +5,24 @@ const PlaylistContext = createContext();
 
 export const PlaylistProvider = ({ children }) => {
   const [playlists, setPlaylists] = useState(() => {
-  const stored = localStorage.getItem('mediaPlaylists');
+    const stored = localStorage.getItem('mediaPlaylists');
     return stored ? Object.values(JSON.parse(stored)) : [];
   });
 
-  const [songQueue, setSongQueue] = useState(() => {
-    const stored = localStorage.getItem('mediaQueue');
-    return stored ? Object.values(JSON.parse(stored)) : [];
-  });
+  const [queue, setQueue] = useState([]); // In-memory queue
+  const [currentQueueTrackIndex, setCurrentQueueTrackIndex] = useState(0);
 
-  const [currentPlayingInfo, setCurrentPlayingInfo] = useState({ playlistId: null, trackIndex: null });
+  const [currentPlayingInfo, setCurrentPlayingInfo] = useState({
+    playlistId: null,
+    trackIndex: null,
+  });
 
   useEffect(() => {
     const playlistMap = Object.fromEntries(playlists.map(p => [p.id, p]));
     localStorage.setItem('mediaPlaylists', JSON.stringify(playlistMap));
-    const queueMap = Object.fromEntries(songQueue.map(q => [q.id, q]));
-    localStorage.setItem('mediaQueue', JSON.stringify(queueMap));
-  }, [songQueue, playlists]);
+  }, [playlists]);
 
+  // Create a new playlist
   const createPlaylist = (name) => {
     const newPlaylist = {
       id: Date.now().toString(),
@@ -32,53 +32,71 @@ export const PlaylistProvider = ({ children }) => {
     setPlaylists(prev => [...prev, newPlaylist]);
     return newPlaylist.id;
   };
-  const createQueue = (name) => {
-    const newQueue = {
-      id: Date.now().toString(),
-      name,
-      tracks: [],
-    };
-    setSongQueue(prev => [...prev, newQueue]);
-    return newQueue.id;
-  };
-  const addTrackToQueue = async (newTracks) => {
-    setSongQueue(prev =>
-      prev.map(q =>
-        q.id === 'queueId' ? { ...q, tracks: [...q.tracks, ...newTracks] } : q
-      )
-    );
-  };
-  const removeTrackFromQueue = async (trackName) => {
-    setSongQueue(prev =>
-      prev.map(q =>
-        q.id === 'queueId' ? { ...q, tracks: q.tracks.filter(t => t.name !== trackName) } : q
-      )
-    );
-  };
-  const removeTrackFromPlaylist = async (playlistId, trackName) => {
-    setPlaylists(prev =>
-      prev.map(p =>
-        p.id === playlistId ? { ...p, tracks: p.tracks.filter(t => t.name !== trackName) } : p
-      )
-    );
-  };
 
-
+  // Add tracks to a playlist
   const addTracksToPlaylist = async (playlistId, newTracks) => {
     setPlaylists(prev =>
       prev.map(p =>
-        p.id === playlistId ? { ...p, tracks: [...p.tracks, ...newTracks] } : p
+        p.id === playlistId
+          ? { ...p, tracks: [...p.tracks, ...newTracks] }
+          : p
       )
     );
   };
 
+  // Fetch a playlist by ID
   const getPlaylistById = (id) => {
     return playlists.find(p => p.id === id);
   };
 
+  // Add tracks to queue (not persistently saved)
+  const addTracksToQueue =  (tracks) => {
+    setQueue(prev => [...prev, tracks]);
+    if (tracks.length > 0) {
+      setCurrentPlayingInfo({ playlistId: 'queue', trackIndex: prev => (prev === null ? 0 : prev) });
+    }
+  };
+
+  // Move to next track in queue
+  const playNextInQueue = () => {
+    setCurrentQueueTrackIndex(prev => (prev + 1 < queue.length ? prev + 1 : 0));
+  };
+
+  // Clear queue
+  const clearQueue = () => {
+    setQueue([]);
+    setCurrentQueueTrackIndex(0);
+  };
+
+  // Remove a track from a playlist
+  const removeTrackFromPlaylist = async (playlistId, trackName) => {
+    setPlaylists(prev =>
+      prev.map(p =>
+        p.id === playlistId
+          ? { ...p, tracks: p.tracks.filter(t => t.name !== trackName) }
+          : p
+      )
+    );
+  };
+
+  const currentQueueTrack = queue[currentQueueTrackIndex] || null;
+
   return (
     <PlaylistContext.Provider
-      value={{ playlists, createPlaylist, addTracksToPlaylist, getPlaylistById, currentPlayingInfo, setCurrentPlayingInfo, songQueue, createQueue, addTrackToQueue, removeTrackFromQueue, removeTrackFromPlaylist }}
+      value={{
+        playlists,
+        createPlaylist,
+        addTracksToPlaylist,
+        getPlaylistById,
+        currentPlayingInfo,
+        setCurrentPlayingInfo,
+        queue,
+        addTracksToQueue,
+        playNextInQueue,
+        clearQueue,
+        currentQueueTrack,
+        currentQueueTrackIndex,
+      }}
     >
       {children}
     </PlaylistContext.Provider>

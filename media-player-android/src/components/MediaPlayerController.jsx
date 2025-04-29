@@ -10,14 +10,23 @@ const MediaPlayerController = () => {
   const playerRef = useRef(null);
   const fileInputRef = useRef(null);
   const { id } = useParams();
-  const { getPlaylistById, addTracksToPlaylist, setCurrentPlayingInfo } = usePlaylist();
-  
+  const {
+    getPlaylistById,
+    addTracksToPlaylist,
+    setCurrentPlayingInfo,
+    queue,
+    currentQueueTrack,
+    playNextInQueue,
+    addTracksToQueue
+  } = usePlaylist();
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [playlistData, setPlaylistData] = useState(null);
   const [currentUrl, setCurrentUrl] = useState(null);
+
+  const isQueueActive = queue.length > 0;
 
   useEffect(() => {
     const updatedPlaylist = getPlaylistById(id);
@@ -26,75 +35,100 @@ const MediaPlayerController = () => {
 
   useEffect(() => {
     const loadTrackUrl = async () => {
-      if (playlistData?.tracks?.length > 0) {
-        const track = playlistData.tracks[currentTrackIndex];
+      let track = null;
+
+      if (isQueueActive && currentQueueTrack) {
+        track = currentQueueTrack;
+      } else if (playlistData?.tracks?.length > 0) {
+        track = playlistData.tracks[currentTrackIndex];
+      }
+
+      if (track) {
         const file = await getFile(track.name);
-        console.log('File:', file);
         if (file instanceof Blob) {
           const url = URL.createObjectURL(file);
           setCurrentUrl(url);
+        } else {
+          setCurrentUrl(null);
         }
+      } else {
+        setCurrentUrl(null);
       }
     };
+
     loadTrackUrl();
-  }, [playlistData, currentTrackIndex]);
+  }, [playlistData, currentTrackIndex, queue, currentQueueTrack, isQueueActive]);
 
   useEffect(() => {
-    // Whenever the track index changes, update global playing info
-    if (id) {
+    if (id && !isQueueActive) {
       setCurrentPlayingInfo({ playlistId: id, trackIndex: currentTrackIndex });
     }
-  }, [id, currentTrackIndex, setCurrentPlayingInfo]);
+  }, [id, currentTrackIndex, isQueueActive, setCurrentPlayingInfo]);
 
-  console.log('Current URL:', currentUrl);
   const togglePlayPause = () => setIsPlaying(prev => !prev);
   const handleVolumeUp = () => setVolume(v => Math.min(1, v + 0.1));
   const handleVolumeDown = () => setVolume(v => Math.max(0, v - 0.1));
+
   const handleNext = () => {
-    if (!playlistData?.tracks?.length) return;
-    setCurrentTrackIndex((prev) => (prev + 1) % playlistData.tracks.length);
+    if (isQueueActive) {
+      playNextInQueue();
+    } else if (playlistData?.tracks?.length) {
+      setCurrentTrackIndex((prev) => (prev + 1) % playlistData.tracks.length);
+    }
     setIsPlaying(true);
   };
+
   const handlePrev = () => {
-    if (!playlistData?.tracks?.length) return;
-    setCurrentTrackIndex((prev) =>
-      prev === 0 ? playlistData.tracks.length - 1 : prev - 1
-    );
-    setIsPlaying(true);
+    if (!isQueueActive && playlistData?.tracks?.length) {
+      setCurrentTrackIndex((prev) =>
+        prev === 0 ? playlistData.tracks.length - 1 : prev - 1
+      );
+      setIsPlaying(true);
+    }
+    // No previous in queue mode
   };
 
   const handleFileChange = async (event) => {
     const files = Array.from(event.target.files);
-  
     if (!files.length) return;
-    
-    const refreshed = getPlaylistById(id);
-    const existingTrackNames = new Set(refreshed?.tracks?.map(t => t.name));
-  
-    const newTracks = [];
-  
-    for (const file of files) {
-      if (!existingTrackNames.has(file.name)) {
+
+    if (isQueueActive || !id) {
+      // If in Queue mode, add directly to queue
+      files.forEach(file => {
         const url = URL.createObjectURL(file);
-        setCurrentUrl(url); // set current URL to the new file
-        await saveFile(file.name, file); // only save if not already saved
-        newTracks.push({ name: file.name, url }); // push new track
-        console.log('New Track:', { name: file.name, url });
+        setCurrentUrl(url); // set current URL to the new file     
+        
+        addTracksToQueue ({ name: file.name, url });
+        
+        
+      });
+    } else {
+      // Playlist mode
+      const refreshed = getPlaylistById(id);
+      const existingTrackNames = new Set(refreshed?.tracks?.map(t => t.name));
+      const newTracks = [];
+  
+      for (const file of files) {
+        if (!existingTrackNames.has(file.name)) {
+          const url = URL.createObjectURL(file);
+          setCurrentUrl(url); // set current URL to the new file
+          await saveFile(file.name, file); // Save to IndexedDB
+          newTracks.push({ name: file.name });
+        }
+      }
+  
+      if (newTracks.length > 0) {
+        await addTracksToPlaylist(id, newTracks);
+        const updated = getPlaylistById(id);
+        setPlaylistData(updated);
       }
     }
   
-    if (newTracks.length > 0) {
-      await addTracksToPlaylist(id, newTracks);
-      const updated = getPlaylistById(id);
-      setPlaylistData(updated);
-    }
-  
-    event.target.value = null; // reset input field
+    event.target.value = null; // Reset file input
   };
-  
 
   return (
-    <Box sx={{mt:2}}>
+    <Box sx={{ mt: 2 }}>
       <input
         type="file"
         accept="audio/*,video/*"
@@ -112,8 +146,8 @@ const MediaPlayerController = () => {
         Add Media Files
       </Button>
 
-      {playlistData?.tracks?.length > 0 && currentUrl && (
-        <Box sx={{mt:5}}>
+      {currentUrl && (
+        <Box sx={{ mt: 5 }}>
           <ReactPlayer
             ref={playerRef}
             url={currentUrl}
@@ -124,7 +158,6 @@ const MediaPlayerController = () => {
             height="auto"
             style={{ display: 'none' }}
           />
-
           <ShufflePlayer
             isPlaying={isPlaying}
             onPlayPause={togglePlayPause}
