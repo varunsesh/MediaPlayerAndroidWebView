@@ -47,9 +47,11 @@ const MediaPlayerController = ({isQueueActive}) => {
 
       if (isQueueActive && currentQueueTrack) {
         track = currentQueueTrack;
+        setCurrentTrack(track);
         
       } else if (playlistData?.tracks?.length > 0) {
         track = playlistData.tracks[currentTrackIndex];
+        setCurrentTrack(track);
       }
 
       if (track) {
@@ -83,25 +85,27 @@ const MediaPlayerController = ({isQueueActive}) => {
   }, [id, currentTrackIndex, isQueueActive, setCurrentPlayingInfo]);
 
 
-    // Save paused position to localStorage
-    useEffect(() => {
-      if (!isPlaying && currentTrack) {
-        localStorage.setItem(`pausedPosition_${currentTrack.name}`, currentTime);
-      }
-    }, [isPlaying, currentTime, currentTrack]);
-
       // Resume from last paused position
   useEffect(() => {
     if (currentTrack && playerRef.current) {
       const saved = localStorage.getItem(`pausedPosition_${currentTrack.name}`);
       if (saved) {
-        playerRef.current.seekTo(parseFloat(saved), 'seconds');
-        setCurrentTime(parseFloat(saved));
+        setTimeout(() => {
+          playerRef.current.seekTo(parseFloat(saved), 'seconds');
+          setCurrentTime(parseFloat(saved));
+        }, 100); // Delay to ensure player is mounted
       }
     }
   }, [currentTrack]);
 
-  const togglePlayPause = () => setIsPlaying(prev => !prev);
+  const togglePlayPause = () => {
+      if (isPlaying && currentTrack) {
+        // Save position *only when user is pausing*
+        localStorage.setItem(`pausedPosition_${currentTrack.name}`, currentTime);
+      }
+     
+    setIsPlaying(prev => !prev);
+  }
   const handleVolumeUp = () => setVolume(v => Math.min(1, v + 0.1));
   const handleVolumeDown = () => setVolume(v => Math.max(0, v - 0.1));
 

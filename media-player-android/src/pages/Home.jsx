@@ -13,12 +13,10 @@ export default function Home() {
       <Button variant="contained" size="large" onClick={() => navigate('/playlists')}>
         View Playlists
       </Button>
-      <Button variant="outlined" size="large">
-        Add to Queue
+      <Button variant="outlined" size="large" onClick = {() => navigate('/queue')}>
+        View Queue
       </Button>
-      <Button variant="text" size="large">
-        Currently Playing
-      </Button>
+   
     </Stack>
   );
 }

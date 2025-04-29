@@ -1,6 +1,6 @@
 // App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { CssBaseline, Container, BottomNavigation, BottomNavigationAction, Box, createTheme, ThemeProvider, } from '@mui/material';
 import Home from './pages/Home';
 import Playlist from './pages/Playlist';
@@ -86,6 +86,7 @@ function AppLayout() {
           <Route path="/playlists" element={<Playlist />} />
           <Route path="/playlists/:id" element={<PlaylistDetail />} />
           <Route path="/queue" element={<Queue />} />
+    
         </Routes>
       </Container>
       <NavigationBar />

@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         webView.webViewClient = WebViewClient()
-        webView.loadUrl("file:///android_asset/index.html")
+        webView.loadUrl("file:///android_asset/index.html#/")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {

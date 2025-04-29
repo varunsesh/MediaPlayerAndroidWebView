@@ -1,0 +1,139 @@
+{
+  "hash": "26b11275",
+  "configHash": "0acbc687",
+  "lockfileHash": "43cbc97e",
+  "browserHash": "31d7588f",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "75da94b6",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "1e262891",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "1f3c8091",
+      "needsInterop": false
+    },
+    "@mui/material": {
+      "src": "../../node_modules/@mui/material/esm/index.js",
+      "file": "@mui_material.js",
+      "fileHash": "d55f30c1",
+      "needsInterop": false
+    },
+    "@mui/icons-material/QueueMusic": {
+      "src": "../../node_modules/@mui/icons-material/esm/QueueMusic.js",
+      "file": "@mui_icons-material_QueueMusic.js",
+      "fileHash": "a0f6ebfb",
+      "needsInterop": false
+    },
+    "@mui/icons-material/Home": {
+      "src": "../../node_modules/@mui/icons-material/esm/Home.js",
+      "file": "@mui_icons-material_Home.js",
+      "fileHash": "25e9e4c7",
+      "needsInterop": false
+    },
+    "@mui/icons-material/PlaylistPlay": {
+      "src": "../../node_modules/@mui/icons-material/esm/PlaylistPlay.js",
+      "file": "@mui_icons-material_PlaylistPlay.js",
+      "fileHash": "689bc5ce",
+      "needsInterop": false
+    },
+    "react-swipeable": {
+      "src": "../../node_modules/react-swipeable/es/index.js",
+      "file": "react-swipeable.js",
+      "fileHash": "45e4ee3a",
+      "needsInterop": false
+    },
+    "react-player": {
+      "src": "../../node_modules/react-player/lib/index.js",
+      "file": "react-player.js",
+      "fileHash": "b7ce6425",
+      "needsInterop": true
+    },
+    "@mui/icons-material": {
+      "src": "../../node_modules/@mui/icons-material/esm/index.js",
+      "file": "@mui_icons-material.js",
+      "fileHash": "42706655",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "Wistia-ZMZTXCKL": {
+      "file": "Wistia-ZMZTXCKL.js"
+    },
+    "Twitch-CWGHSF3J": {
+      "file": "Twitch-CWGHSF3J.js"
+    },
+    "DailyMotion-YEM3BEZG": {
+      "file": "DailyMotion-YEM3BEZG.js"
+    },
+    "Mixcloud-DSFL345P": {
+      "file": "Mixcloud-DSFL345P.js"
+    },
+    "Vidyard-GWDXHKHV": {
+      "file": "Vidyard-GWDXHKHV.js"
+    },
+    "Kaltura-SZRWYTSM": {
+      "file": "Kaltura-SZRWYTSM.js"
+    },
+    "FilePlayer-FH3PZYIO": {
+      "file": "FilePlayer-FH3PZYIO.js"
+    },
+    "Preview-SLK2TS3E": {
+      "file": "Preview-SLK2TS3E.js"
+    },
+    "YouTube-G4RQ4FG3": {
+      "file": "YouTube-G4RQ4FG3.js"
+    },
+    "SoundCloud-MTJAD2MS": {
+      "file": "SoundCloud-MTJAD2MS.js"
+    },
+    "Vimeo-CJ3R7KGW": {
+      "file": "Vimeo-CJ3R7KGW.js"
+    },
+    "Mux-JBPL7LZP": {
+      "file": "Mux-JBPL7LZP.js"
+    },
+    "Facebook-5XAJ2VQS": {
+      "file": "Facebook-5XAJ2VQS.js"
+    },
+    "Streamable-Z3HJCUGS": {
+      "file": "Streamable-Z3HJCUGS.js"
+    },
+    "chunk-ZE3GGOUE": {
+      "file": "chunk-ZE3GGOUE.js"
+    },
+    "chunk-VMOYVQZT": {
+      "file": "chunk-VMOYVQZT.js"
+    },
+    "chunk-GELY3VBM": {
+      "file": "chunk-GELY3VBM.js"
+    },
+    "chunk-YWXWNOQJ": {
+      "file": "chunk-YWXWNOQJ.js"
+    },
+    "chunk-AUWPEYXQ": {
+      "file": "chunk-AUWPEYXQ.js"
+    },
+    "chunk-C6WWHQR7": {
+      "file": "chunk-C6WWHQR7.js"
+    },
+    "chunk-JP6PQRDI": {
+      "file": "chunk-JP6PQRDI.js"
+    },
+    "chunk-SPIXJA6J": {
+      "file": "chunk-SPIXJA6J.js"
+    },
+    "chunk-KQ7WO6A7": {
+      "file": "chunk-KQ7WO6A7.js"
+    }
+  }
+}
