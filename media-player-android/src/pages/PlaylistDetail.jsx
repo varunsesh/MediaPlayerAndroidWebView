@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 
 export default function PlaylistDetail() {
   const { id } = useParams();
-  const { getPlaylistById, currentPlayingInfo } = usePlaylist();
+  const { getPlaylistById, currentPlayingInfo, setCurrentPlayingInfo } = usePlaylist();
   const playlistObj = getPlaylistById(id);
   const playlist = playlistObj?.tracks || [];
 
@@ -85,7 +85,12 @@ export default function PlaylistDetail() {
       p: 0, // remove default padding
       width: '100%' 
     }}
-    onClick={() => {/* Optional: Play this track */}}
+    onClick={
+      () => {
+        console.log(idx, id);
+        setCurrentPlayingInfo({ playlistId: id, trackIndex: idx });
+    }
+  }
   >
       <PlayArrowIcon fontSize="small" />
     <CardContent sx={{ flexGrow: 1, py: 0.5, '&:last-child': { pb: 0.5 } }}>

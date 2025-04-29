@@ -1,7 +1,8 @@
 // src/pages/Queue.jsx
-import { Box, Typography, List, ListItem, ListItemText, Stack, Button } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Stack, Button, CardContent, CardActionArea } from '@mui/material';
 import { usePlaylist } from '../components/PlaylistContext';
 import MediaPlayerController from '../components/MediaPlayerController';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 export default function Queue() {
   const { queue, currentQueueTrackIndex, clearQueue } = usePlaylist();
@@ -34,7 +35,7 @@ export default function Queue() {
             No songs in queue.
           </Typography>
         ) : (
-          <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <List sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
             {queue.map((track, idx) => {
               const isCurrentlyPlaying = idx === currentQueueTrackIndex;
               return (
@@ -46,6 +47,7 @@ export default function Queue() {
                     py: 1,
                     backgroundColor: isCurrentlyPlaying ? 'primary.light' : 'background.paper',
                     boxShadow: 1,
+                    width: '90%',
                     transition: 'background-color 0.2s, transform 0.2s',
                     '&:hover': {
                       backgroundColor: 'primary.main',
@@ -54,10 +56,23 @@ export default function Queue() {
                     },
                   }}
                 >
-                  <ListItemText
-                    primary={track.name}
-                    primaryTypographyProps={{ fontWeight: isCurrentlyPlaying ? 700 : 500 }}
-                  />
+                 <CardActionArea
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1, // less gap
+                      p: 0, // remove default padding
+                      width: '100%' 
+                    }}
+                    onClick={() => {/* Optional: Play this track */}}
+                  >
+                      <PlayArrowIcon fontSize="small" />
+                    <CardContent sx={{ flexGrow: 1, py: 0.5, '&:last-child': { pb: 0.5 } }}>
+                      <Typography sx={{wordWrap:'break-word'}} variant="body2" fontWeight={600}>
+                        {track.name}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
                 </ListItem>
               );
             })}

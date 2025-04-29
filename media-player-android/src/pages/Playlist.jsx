@@ -14,8 +14,16 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Modal
 } from '@mui/material';
 import { usePlaylist } from '../components/PlaylistContext';
+
+// outside react class 
+const styles = {
+  root: {
+    backgroundColor: "opaque"
+  }
+};
 
 export default function Playlist() {
   const navigate = useNavigate();
@@ -64,7 +72,9 @@ export default function Playlist() {
       </Box>
 
       {/* Dialog for entering playlist name */}
-      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+      
+      <Dialog 
+         open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>Create New Playlist</DialogTitle>
         <DialogContent>
           <TextField
@@ -83,6 +93,7 @@ export default function Playlist() {
           </Button>
         </DialogActions>
       </Dialog>
+     
     </Stack>
   );
 }

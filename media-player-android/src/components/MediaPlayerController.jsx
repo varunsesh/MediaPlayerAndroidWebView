@@ -18,7 +18,8 @@ const MediaPlayerController = ({isQueueActive}) => {
     currentQueueTrack,
     playNextInQueue,
     addTracksToQueue,
-    playPrevInQueue
+    playPrevInQueue, 
+    currentPlayingInfo
   } = usePlaylist();
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -97,6 +98,20 @@ const MediaPlayerController = ({isQueueActive}) => {
       }
     }
   }, [currentTrack]);
+
+  useEffect(() => {
+    if (!isQueueActive && id === currentPlayingInfo.playlistId) {
+      setCurrentTrackIndex(currentPlayingInfo.trackIndex || 0);
+      setIsPlaying(true); // Start playing the selected track
+    }
+  }, [currentPlayingInfo, id, isQueueActive]);
+  
+  useEffect(() => {
+    if (isQueueActive && currentPlayingInfo.playlistId === 'queue') {
+      // Ensure queue index is updated and playing
+      setIsPlaying(true);
+    }
+  }, [currentPlayingInfo, isQueueActive]);
 
   const togglePlayPause = () => {
       if (isPlaying && currentTrack) {
@@ -202,6 +217,7 @@ const MediaPlayerController = ({isQueueActive}) => {
             controls={false}
             onProgress={({ playedSeconds }) => setCurrentTime(playedSeconds)}
             onDuration={(d) => setDuration(d)}
+            onEnded={handleNext} 
             width="100%"
             height="auto"
             style={{ display: 'none' }}
