@@ -27,7 +27,8 @@ export default function PlaylistDetail() {
   }, [currentPlayingInfo]);
 
   return (
-    <Box sx={{alignItems:'center', display: 'flex', flexDirection: 'column', overflow:'hidden', height: '100vh', ml: 2, mr: 2 }}>
+    <Box sx={{alignItems:'center', display: 'flex', flexDirection: 'column', overflow:'hidden', height: '100vh', justifyContent:'center',
+     }}>
       {/* Header and Controller */}
       <Box sx={{  flexShrink: 0, pt: 2, mb:5 }}>
         <Typography variant="h5" fontWeight={700} mb={2}>
@@ -44,7 +45,6 @@ export default function PlaylistDetail() {
         sx={{
           flexGrow: 1,
           overflowY: 'auto',
-          ml:1.5,
           pb: 10, // extra padding for safe bottom
           scrollbarWidth:'none', 
           '&::-webkit-scrollbar': {

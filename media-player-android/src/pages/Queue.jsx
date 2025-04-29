@@ -7,7 +7,11 @@ export default function Queue() {
   const { queue, currentQueueTrackIndex, clearQueue } = usePlaylist();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', overflow:'hidden', height: '100vh', ml: 9, mr: 2 }}>
+    <Box sx={
+      { display: 'flex', flexDirection: 'column', overflow:'hidden', height: '100vh', justifyContent:"center",
+        alignItems:"center"
+       }
+      }>
       {/* Header */}
       <Box sx={{ flexShrink: 0, pt: 2, mb:2 }}>
         <Typography variant="h5" fontWeight={700} mb={2}>

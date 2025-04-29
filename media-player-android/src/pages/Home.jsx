@@ -6,7 +6,7 @@ export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <Stack spacing={3} alignItems="stretch" sx={{ml:8, pt: 4 }}>
+    <Stack spacing={3} alignItems="center" justifyContent='center' sx={{ml:8, pt: 4 }}>
       <Typography variant="h5" textAlign="center" fontWeight={600}>
         🎵 Vibe with Music
       </Typography>
