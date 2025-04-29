@@ -35,7 +35,7 @@ export default function PlaylistDetail() {
         </Typography>
 
         <Box sx={{ display: 'flex', justifyContent: 'center', mt:5, mb: 2 }}>
-          <MediaPlayerController  />
+          <MediaPlayerController isQueueActive={false} />
         </Box>
       </Box>
 

@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom';
 import { usePlaylist } from './PlaylistContext';
 import { saveFile, getFile } from '../utils/indexedDbHelper';
 
-const MediaPlayerController = () => {
+const MediaPlayerController = ({isQueueActive}) => {
   const playerRef = useRef(null);
   const fileInputRef = useRef(null);
   const { id } = useParams();
@@ -26,7 +26,7 @@ const MediaPlayerController = () => {
   const [playlistData, setPlaylistData] = useState(null);
   const [currentUrl, setCurrentUrl] = useState(null);
 
-  const isQueueActive = queue.length > 0;
+  // const isQueueActive = queue.length > 0;
 
   useEffect(() => {
     const updatedPlaylist = getPlaylistById(id);

@@ -15,7 +15,7 @@ export default function Queue() {
         </Typography>
       </Box>
       {/* Media Player Controller */}
-      <MediaPlayerController />
+      <MediaPlayerController isQueueActive={true} />
       {/* Scrollable queue list */}
       <Box
         sx={{
