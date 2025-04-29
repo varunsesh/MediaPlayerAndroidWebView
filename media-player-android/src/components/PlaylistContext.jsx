@@ -49,18 +49,19 @@ export const PlaylistProvider = ({ children }) => {
     return playlists.find(p => p.id === id);
   };
 
-  // Add tracks to queue (not persistently saved)
-  const addTracksToQueue =  (tracks) => {
-    setQueue(prev => [...prev, tracks]);
-    if (tracks.length > 0) {
-      setCurrentPlayingInfo({ playlistId: 'queue', trackIndex: prev => (prev === null ? 0 : prev) });
-    }
-  };
+// Add tracks to queue (not persistently saved)
+const addTracksToQueue = (tracks) => {
+  setQueue(prev => [...prev, ...tracks]);  // <-- Fix spreading
+  if (tracks.length > 0 && queue.length === 0) {
+    setCurrentPlayingInfo({ playlistId: 'queue', trackIndex: 0 });
+  }
+};
 
-  // Move to next track in queue
-  const playNextInQueue = () => {
-    setCurrentQueueTrackIndex(prev => (prev + 1 < queue.length ? prev + 1 : 0));
-  };
+// Play next track in queue
+const playNextInQueue = () => {
+  setCurrentQueueTrackIndex(prev => (prev + 1 < queue.length ? prev + 1 : 0));
+  setCurrentPlayingInfo({ playlistId: 'queue', trackIndex: (currentQueueTrackIndex + 1) % queue.length });
+};
 
   // Clear queue
   const clearQueue = () => {

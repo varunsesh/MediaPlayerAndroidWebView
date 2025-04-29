@@ -39,18 +39,27 @@ const MediaPlayerController = () => {
 
       if (isQueueActive && currentQueueTrack) {
         track = currentQueueTrack;
+        
       } else if (playlistData?.tracks?.length > 0) {
         track = playlistData.tracks[currentTrackIndex];
       }
 
       if (track) {
-        const file = await getFile(track.name);
-        if (file instanceof Blob) {
-          const url = URL.createObjectURL(file);
-          setCurrentUrl(url);
-        } else {
-          setCurrentUrl(null);
+        if(!isQueueActive){
+          const file = await getFile(track.name);
+          if (file instanceof Blob) {
+            const url = URL.createObjectURL(file);
+            setTimeout(() => {
+              setCurrentUrl(url);
+            }, 50); // 50ms delay
+          } else {
+            setCurrentUrl(null);
+          }
         }
+        else{
+          setCurrentUrl(track.url);
+        }
+        
       } else {
         setCurrentUrl(null);
       }
@@ -94,14 +103,13 @@ const MediaPlayerController = () => {
 
     if (isQueueActive || !id) {
       // If in Queue mode, add directly to queue
-      files.forEach(file => {
-        const url = URL.createObjectURL(file);
-        setCurrentUrl(url); // set current URL to the new file     
-        
-        addTracksToQueue ({ name: file.name, url });
-        
-        
-      });
+      const newTracks = files.map(file => ({
+        name: file.name,
+        url: URL.createObjectURL(file),
+      }));
+      
+      addTracksToQueue(newTracks);
+
     } else {
       // Playlist mode
       const refreshed = getPlaylistById(id);
@@ -110,8 +118,6 @@ const MediaPlayerController = () => {
   
       for (const file of files) {
         if (!existingTrackNames.has(file.name)) {
-          const url = URL.createObjectURL(file);
-          setCurrentUrl(url); // set current URL to the new file
           await saveFile(file.name, file); // Save to IndexedDB
           newTracks.push({ name: file.name });
         }
