@@ -67,56 +67,46 @@ const MediaPlayerController = ({isQueueActive}) => {
   }, [playlistData, currentTrackIndex, isQueueActive]);
 
   useEffect(() => {
-    let previousUrl = null;
-  
     const loadTrackUrl = async () => {
       let track = null;
-  
+
       if (isQueueActive && currentQueueTrack) {
         track = currentQueueTrack;
+        setCurrentTrack(track);
+        
       } else if (playlistData?.tracks?.length > 0) {
         track = playlistData.tracks[currentTrackIndex];
+        setCurrentTrack(track);
       }
-  
-      setCurrentTrack(track); // ← move this out here
-  
-      if (!track) {
-        setCurrentUrl(null);
-        return;
-      }
-  
+
       let url = null;
-  
-      // ✅ Correct handling based on data
-      if (inputMode === 'url' && track.url) {
-        url = track.url;
-      } else {
-        try {
-          const file = await getFile(track.name);
-          if (file instanceof Blob) {
-            url = URL.createObjectURL(file);
+      if (track) {
+        if(!isQueueActive){
+          if(inputMode === 'url'){
+            url = track.url;
           }
-        } catch (err) {
-          console.warn('Failed to get file from IndexedDB', err);
+          else{
+            const file = await getFile(track.name);
+            if (file instanceof Blob) {
+              url = URL.createObjectURL(file);
+              setTimeout(() => {
+                setCurrentUrl(url);
+              }, 50); // 50ms delay
+            } else {
+              setCurrentUrl(null);
+            }
+          }
         }
+        else{
+          setCurrentUrl(track.url);
+        }
+        
+      } else {
+        setCurrentUrl(null);
       }
-  
-      // Clean up old blob URLs
-      if (previousUrl && previousUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previousUrl);
-      }
-  
-      previousUrl = url;
-      setCurrentUrl(url);
     };
-  
+
     loadTrackUrl();
-  
-    return () => {
-      if (previousUrl && previousUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previousUrl);
-      }
-    };
   }, [playlistData, currentTrackIndex, queue, currentQueueTrack, isQueueActive]);
   
   
@@ -133,36 +123,21 @@ const MediaPlayerController = ({isQueueActive}) => {
       setUrlInput('');
   };
 
+  // Resume from last paused position
   useEffect(() => {
-    if (!currentTrack) return;
-  
-    const saved = localStorage.getItem(`pausedPosition_${currentTrack.name}`);
-    if (saved) {
-      const timeoutId = setTimeout(() => {
-        if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
+    if (currentTrack && playerRef.current) {
+      const saved = localStorage.getItem(`pausedPosition_${currentTrack.name}`);
+      if (saved) {
+        setTimeout(() => {
           playerRef.current.seekTo(parseFloat(saved), 'seconds');
           setCurrentTime(parseFloat(saved));
-        }
-      }, 100);
-  
-      return () => clearTimeout(timeoutId);
+        }, 100); // Delay to ensure player is mounted
+      }
     }
   }, [currentTrack]);
+
   
       
-  // Handle play/pause when the track changes
-      useEffect(() => {
-        if (!isQueueActive && playlistData?.tracks?.length > 0) {
-          const isTrackValid = playlistData.tracks[currentTrackIndex];
-          if (!isTrackValid) {
-            setCurrentTrackIndex(Math.max(0, playlistData.tracks.length - 1));
-          }
-        }
-      }, [playlistData]);
-
-      
-      
-
   useEffect(() => {
     if (!isQueueActive && id === currentPlayingInfo.playlistId) {
       setCurrentTrackIndex(currentPlayingInfo.trackIndex || 0);
@@ -185,6 +160,24 @@ const MediaPlayerController = ({isQueueActive}) => {
      
     setIsPlaying(prev => !prev);
   }
+
+  useEffect(() => {
+    setCurrentTrackIndex(0);
+    setCurrentTrack(null);
+    setCurrentUrl(null);
+    setCurrentTime(0);
+    setDuration(0);
+    setIsPlaying(false);
+  
+    return () => {
+      // Stop playback explicitly
+      if (playerRef.current) {
+        playerRef.current.seekTo(0);
+      }
+    };
+  }, [id]);
+
+
   const handleVolumeUp = () => setVolume(v => Math.min(1, v + 0.1));
   const handleVolumeDown = () => setVolume(v => Math.max(0, v - 0.1));
 
@@ -274,8 +267,8 @@ const MediaPlayerController = ({isQueueActive}) => {
       {currentUrl && (
         <Box sx={{ mt: 1 }}>
           <ReactPlayer
+            key={currentUrl}
             ref={playerRef}
-            key={currentUrl} 
             url={currentUrl}
             playing={isPlaying}
             volume={volume}
