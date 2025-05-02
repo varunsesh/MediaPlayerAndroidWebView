@@ -1,10 +1,20 @@
 import React, { useRef, useState, useEffect } from 'react';
 import ReactPlayer from 'react-player';
-import { Box, Button, Slider, Typography } from '@mui/material';
+import { Box, Button, Slider, Typography, Dialog, 
+  DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import ShufflePlayer from './ShufflePlayer';
 import { useParams } from 'react-router-dom';
 import { usePlaylist } from './PlaylistContext';
 import { saveFile, getFile } from '../utils/indexedDbHelper';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+const dialogTheme = createTheme({
+  palette: {
+    background: {
+      paper: '#fff9e6', // pure white for the dialog only
+    },
+  },
+});
 
 const MediaPlayerController = ({isQueueActive}) => {
   const playerRef = useRef(null);
@@ -30,6 +40,9 @@ const MediaPlayerController = ({isQueueActive}) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTrack, setCurrentTrack] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [inputMode, setInputMode] = useState('file'); // 'file' or 'url'
+  const [urlInput, setUrlInput] = useState('');
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
@@ -42,42 +55,71 @@ const MediaPlayerController = ({isQueueActive}) => {
     setPlaylistData(updatedPlaylist);
   }, [getPlaylistById, id]);
 
+  //Deletion edge case
   useEffect(() => {
+    if (!isQueueActive && playlistData?.tracks?.length > 0) {
+      const current = playlistData.tracks[currentTrackIndex];
+      if (!current) {
+        const safeIndex = Math.min(currentTrackIndex, playlistData.tracks.length - 1);
+        setCurrentTrackIndex(safeIndex);
+      }
+    }
+  }, [playlistData, currentTrackIndex, isQueueActive]);
+
+  useEffect(() => {
+    let previousUrl = null;
+  
     const loadTrackUrl = async () => {
       let track = null;
-
+  
       if (isQueueActive && currentQueueTrack) {
         track = currentQueueTrack;
-        setCurrentTrack(track);
-        
       } else if (playlistData?.tracks?.length > 0) {
         track = playlistData.tracks[currentTrackIndex];
-        setCurrentTrack(track);
       }
-
-      if (track) {
-        if(!isQueueActive){
+  
+      setCurrentTrack(track); // ← move this out here
+  
+      if (!track) {
+        setCurrentUrl(null);
+        return;
+      }
+  
+      let url = null;
+  
+      // ✅ Correct handling based on data
+      if (inputMode === 'url' && track.url) {
+        url = track.url;
+      } else {
+        try {
           const file = await getFile(track.name);
           if (file instanceof Blob) {
-            const url = URL.createObjectURL(file);
-            setTimeout(() => {
-              setCurrentUrl(url);
-            }, 50); // 50ms delay
-          } else {
-            setCurrentUrl(null);
+            url = URL.createObjectURL(file);
           }
+        } catch (err) {
+          console.warn('Failed to get file from IndexedDB', err);
         }
-        else{
-          setCurrentUrl(track.url);
-        }
-        
-      } else {
-        setCurrentUrl(null);
+      }
+  
+      // Clean up old blob URLs
+      if (previousUrl && previousUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previousUrl);
+      }
+  
+      previousUrl = url;
+      setCurrentUrl(url);
+    };
+  
+    loadTrackUrl();
+  
+    return () => {
+      if (previousUrl && previousUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previousUrl);
       }
     };
-
-    loadTrackUrl();
   }, [playlistData, currentTrackIndex, queue, currentQueueTrack, isQueueActive]);
+  
+  
 
   useEffect(() => {
     if (id && !isQueueActive) {
@@ -85,19 +127,41 @@ const MediaPlayerController = ({isQueueActive}) => {
     }
   }, [id, currentTrackIndex, isQueueActive, setCurrentPlayingInfo]);
 
+  const closeDialog = () => {
+      setDialogOpen(false);
+      setInputMode('file');
+      setUrlInput('');
+  };
 
-      // Resume from last paused position
   useEffect(() => {
-    if (currentTrack && playerRef.current) {
-      const saved = localStorage.getItem(`pausedPosition_${currentTrack.name}`);
-      if (saved) {
-        setTimeout(() => {
+    if (!currentTrack) return;
+  
+    const saved = localStorage.getItem(`pausedPosition_${currentTrack.name}`);
+    if (saved) {
+      const timeoutId = setTimeout(() => {
+        if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
           playerRef.current.seekTo(parseFloat(saved), 'seconds');
           setCurrentTime(parseFloat(saved));
-        }, 100); // Delay to ensure player is mounted
-      }
+        }
+      }, 100);
+  
+      return () => clearTimeout(timeoutId);
     }
   }, [currentTrack]);
+  
+      
+  // Handle play/pause when the track changes
+      useEffect(() => {
+        if (!isQueueActive && playlistData?.tracks?.length > 0) {
+          const isTrackValid = playlistData.tracks[currentTrackIndex];
+          if (!isTrackValid) {
+            setCurrentTrackIndex(Math.max(0, playlistData.tracks.length - 1));
+          }
+        }
+      }, [playlistData]);
+
+      
+      
 
   useEffect(() => {
     if (!isQueueActive && id === currentPlayingInfo.playlistId) {
@@ -189,7 +253,7 @@ const MediaPlayerController = ({isQueueActive}) => {
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box sx={{ mt: 0 }}>
       <input
         type="file"
         accept="audio/*,video/*"
@@ -202,15 +266,16 @@ const MediaPlayerController = ({isQueueActive}) => {
         variant="outlined"
         fullWidth
         sx={{ mb: 2 }}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={() => setDialogOpen(true)}
       >
-        Add Media Files
+        Add Media
       </Button>
 
       {currentUrl && (
-        <Box sx={{ mt: 5 }}>
+        <Box sx={{ mt: 1 }}>
           <ReactPlayer
             ref={playerRef}
+            key={currentUrl} 
             url={currentUrl}
             playing={isPlaying}
             volume={volume}
@@ -218,6 +283,10 @@ const MediaPlayerController = ({isQueueActive}) => {
             onProgress={({ playedSeconds }) => setCurrentTime(playedSeconds)}
             onDuration={(d) => setDuration(d)}
             onEnded={handleNext} 
+            onError={() => {
+              alert('This media could not be played (maybe a protected URL like YouTube Premium?)');
+            }}
+            
             width="100%"
             height="auto"
             style={{ display: 'none' }}
@@ -231,18 +300,79 @@ const MediaPlayerController = ({isQueueActive}) => {
             onVolumeDown={handleVolumeDown}
           />
             {/* Progress Bar + Time Display */}
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 0 }}>
             <Slider
               value={duration ? (currentTime / duration) * 100 : 0}
               onChange={handleSeek}
               disabled={!duration}
             />
-            <Typography variant="body2" textAlign="center" sx={{ mt: 1 }}>
+            <Typography variant="body2" textAlign="center" sx={{ mt: 0 }}>
               {formatTime(currentTime)} / {formatTime(duration)}
             </Typography>
           </Box>
         </Box>
       )}
+      <ThemeProvider theme={dialogTheme}>
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>Add Media</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Button
+              variant={inputMode === 'file' ? 'contained' : 'outlined'}
+              onClick={() => setInputMode('file')}
+            >
+              Local File
+            </Button>
+            <Button
+              variant={inputMode === 'url' ? 'contained' : 'outlined'}
+              onClick={() => setInputMode('url')}
+            >
+              URL
+            </Button>
+          </Box>
+
+          {inputMode === 'url' ? (
+            <TextField
+              autoFocus
+              fullWidth
+              label="Media URL"
+              variant="outlined"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+            />
+          ) : (
+            <Button variant="outlined" fullWidth onClick={() => fileInputRef.current?.click()}>
+              Choose Files
+            </Button>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+          {inputMode === 'url' && (
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (!urlInput.trim()) return;
+                const track = { name: `URL: ${urlInput}`, url: urlInput.trim() };
+              
+                if (isQueueActive || !id) {
+                  addTracksToQueue([track]);
+                } else {
+                  addTracksToPlaylist(id, [track]);
+                  const updated = getPlaylistById(id);
+                  setPlaylistData(updated);
+                }
+              
+                setUrlInput('');
+                setDialogOpen(false);
+              }}
+            >
+              Add
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
+    </ThemeProvider>
     </Box>
   );
 };

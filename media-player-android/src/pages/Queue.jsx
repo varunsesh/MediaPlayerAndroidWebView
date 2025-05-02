@@ -1,11 +1,13 @@
 // src/pages/Queue.jsx
-import { Box, Typography, List, ListItem, ListItemText, Stack, Button, CardContent, CardActionArea } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Stack, Button, CardContent, 
+  IconButton, CardActionArea } from '@mui/material';
 import { usePlaylist } from '../components/PlaylistContext';
 import MediaPlayerController from '../components/MediaPlayerController';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Queue() {
-  const { queue, currentQueueTrackIndex, clearQueue } = usePlaylist();
+  const { queue, currentQueueTrackIndex, clearQueue, removeTrackFromQueue } = usePlaylist();
 
   return (
     <Box sx={
@@ -56,6 +58,7 @@ export default function Queue() {
                     },
                   }}
                 >
+                  <PlayArrowIcon fontSize="small" />
                  <CardActionArea
                     sx={{ 
                       display: 'flex', 
@@ -66,13 +69,17 @@ export default function Queue() {
                     }}
                     onClick={() => {/* Optional: Play this track */}}
                   >
-                      <PlayArrowIcon fontSize="small" />
+                      
                     <CardContent sx={{ flexGrow: 1, py: 0.5, '&:last-child': { pb: 0.5 } }}>
                       <Typography sx={{wordWrap:'break-word'}} variant="body2" fontWeight={600}>
                         {track.name}
                       </Typography>
                     </CardContent>
+
                   </CardActionArea>
+                  <IconButton onClick={() => removeTrackFromQueue(track.name)}>
+                      <DeleteIcon />
+                  </IconButton>
                 </ListItem>
               );
             })}

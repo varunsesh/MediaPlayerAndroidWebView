@@ -17,13 +17,16 @@ import {
   Modal
 } from '@mui/material';
 import { usePlaylist } from '../components/PlaylistContext';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-// outside react class 
-const styles = {
-  root: {
-    backgroundColor: "opaque"
-  }
-};
+const dialogTheme = createTheme({
+  palette: {
+    background: {
+      paper: '#fff9e6', // pure white for the dialog only
+    },
+  },
+});
+
 
 export default function Playlist() {
   const navigate = useNavigate();
@@ -72,7 +75,7 @@ export default function Playlist() {
       </Box>
 
       {/* Dialog for entering playlist name */}
-      
+      <ThemeProvider theme={dialogTheme}>
       <Dialog 
          open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>Create New Playlist</DialogTitle>
@@ -93,6 +96,7 @@ export default function Playlist() {
           </Button>
         </DialogActions>
       </Dialog>
+      </ThemeProvider>
      
     </Stack>
   );

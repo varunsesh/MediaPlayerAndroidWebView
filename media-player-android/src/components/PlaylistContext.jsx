@@ -84,6 +84,10 @@ const playPrevInQueue = ()=>{
       )
     );
   };
+  //Remove a track from queue
+  const removeTrackFromQueue = (trackName) => {
+    setQueue(prev => prev.filter(t => t.name !== trackName));
+  };
 
   const currentQueueTrack = queue[currentQueueTrackIndex] || null;
 
@@ -101,6 +105,7 @@ const playPrevInQueue = ()=>{
         playNextInQueue,
         playPrevInQueue,
         removeTrackFromPlaylist,
+        removeTrackFromQueue,
         clearQueue,
         currentQueueTrack,
         currentQueueTrackIndex,

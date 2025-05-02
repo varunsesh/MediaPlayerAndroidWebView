@@ -14,10 +14,11 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { usePlaylist } from '../components/PlaylistContext';
 import MediaPlayerController from '../components/MediaPlayerController';
 import { useEffect, useState } from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function PlaylistDetail() {
   const { id } = useParams();
-  const { getPlaylistById, currentPlayingInfo, setCurrentPlayingInfo } = usePlaylist();
+  const { getPlaylistById, currentPlayingInfo, setCurrentPlayingInfo, removeTrackFromPlaylist } = usePlaylist();
   const playlistObj = getPlaylistById(id);
   const playlist = playlistObj?.tracks || [];
 
@@ -30,12 +31,12 @@ export default function PlaylistDetail() {
     <Box sx={{alignItems:'center', display: 'flex', flexDirection: 'column', overflow:'hidden', height: '100vh', justifyContent:'center',
      }}>
       {/* Header and Controller */}
-      <Box sx={{  flexShrink: 0, pt: 2, mb:5 }}>
+      <Box sx={{  flexShrink: 0, pt: 2, mb:0 }}>
         <Typography variant="h5" fontWeight={700} mb={2}>
           {playlistObj?.name || 'Unnamed Playlist'}
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt:5, mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt:0, mb: 1 }}>
           <MediaPlayerController isQueueActive={false} />
         </Box>
       </Box>
@@ -77,13 +78,14 @@ export default function PlaylistDetail() {
           },
         }}
       >
+   <PlayArrowIcon fontSize="small" />
   <CardActionArea
     sx={{ 
       display: 'flex', 
       alignItems: 'center', 
       gap: 1, // less gap
       p: 0, // remove default padding
-      width: '100%' 
+      width: '80%' 
     }}
     onClick={
       () => {
@@ -92,18 +94,23 @@ export default function PlaylistDetail() {
     }
   }
   >
-      <PlayArrowIcon fontSize="small" />
     <CardContent sx={{ flexGrow: 1, py: 0.5, '&:last-child': { pb: 0.5 } }}>
       <Typography sx={{wordWrap:'break-word'}} variant="body2" fontWeight={600}>
         {track.name}
       </Typography>
     </CardContent>
   </CardActionArea>
+  <IconButton onClick={() => removeTrackFromPlaylist(id, track.name)}>
+      <DeleteIcon />
+    </IconButton>
+
 </Card>
+
 
             );
           })}
         </List>
+
       </Box>
     </Box>
   );
